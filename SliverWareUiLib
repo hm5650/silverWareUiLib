@@ -1,124 +1,259 @@
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
+local UILib = {}
 
-local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "HitboxUI"
-
-local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 160, 0, 110)
-main.Position = UDim2.new(0.5, -80, 0.5, -55)
-main.BackgroundColor3 = Color3.fromRGB(20, 50, 50)
-main.BackgroundTransparency = 0.2
-main.Active = true
-main.Draggable = true
-main.BorderSizePixel = 0
-
-local corner = Instance.new("UICorner", main)
-corner.CornerRadius = UDim.new(0, 10)
-
-local minimize = Instance.new("TextButton", main)
-minimize.Size = UDim2.new(0, 20, 0, 20)
-minimize.Position = UDim2.new(1, -22, 0, 2)
-minimize.Text = "▼"
-minimize.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", minimize).CornerRadius = UDim.new(0, 8)
-
-local scroll = Instance.new("ScrollingFrame", main)
-scroll.Size = UDim2.new(1, -10, 1, -30)
-scroll.Position = UDim2.new(0, 5, 0, 25)
-scroll.BackgroundTransparency = 1
-scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-scroll.ScrollBarThickness = 5
-
-local layout = Instance.new("UIListLayout", scroll)
-layout.Padding = UDim.new(0, 6)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-	scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
-end)
-
-local textbox = Instance.new("TextBox", scroll)
-textbox.Size = UDim2.new(1, 0, 0, 30)
-textbox.Text = "10"
-textbox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", textbox).CornerRadius = UDim.new(0, 10)
-
-local toggleButton = Instance.new("TextButton", scroll)
-toggleButton.Size = UDim2.new(1, 0, 0, 30)
-toggleButton.Text = "Enable Hitbox"
-toggleButton.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 10)
-
--- Logic
-_G.HeadSize = tonumber(textbox.Text) or 2
-_G.Disabled = true
-local targetPlayers = {}
-
-local function updatePlayers()
-	targetPlayers = {}
-	for _, p in ipairs(Players:GetPlayers()) do
-		if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-			table.insert(targetPlayers, p)
-		end
-	end
+function UILib:Create(title)
+    local lib = {}
+    local toggles = {}
+    
+    -- Create main screen GUI
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "UILib"
+    screenGui.Parent = game:GetService("CoreGui")
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- Main window
+    local main = Instance.new("Frame")
+    main.Name = "MainWindow"
+    main.Size = UDim2.new(0, 200, 0, 120)
+    main.Position = UDim2.new(0.5, -100, 0.5, -60)
+    main.BackgroundColor3 = Color3.fromRGB(20, 25, 30)
+    main.BackgroundTransparency = 0.1
+    main.BorderSizePixel = 0
+    main.Active = true
+    main.Draggable = true
+    main.Parent = screenGui
+    
+    -- Window shadow effect
+    local shadow = Instance.new("ImageLabel")
+    shadow.Name = "Shadow"
+    shadow.Size = UDim2.new(1, 10, 1, 10)
+    shadow.Position = UDim2.new(0, -5, 0, -5)
+    shadow.BackgroundTransparency = 1
+    shadow.Image = "rbxassetid://1316045217"
+    shadow.ImageColor3 = Color3.new(0, 0, 0)
+    shadow.ImageTransparency = 0.8
+    shadow.ScaleType = Enum.ScaleType.Slice
+    shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+    shadow.Parent = main
+    
+    -- Corner rounding
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, 8)
+    uiCorner.Parent = main
+    
+    -- Layout for elements
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 6)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Parent = main
+    
+    -- Padding inside main frame
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0, 8)
+    padding.PaddingBottom = UDim.new(0, 8)
+    padding.PaddingLeft = UDim.new(0, 8)
+    padding.PaddingRight = UDim.new(0, 8)
+    padding.Parent = main
+    
+    -- Title label
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "Title"
+    titleLabel.Size = UDim2.new(1, -10, 0, 24)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+    titleLabel.Text = title or "UI Library"
+    titleLabel.Font = Enum.Font.GothamSemibold
+    titleLabel.TextSize = 16
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.TextYAlignment = Enum.TextYAlignment.Bottom
+    titleLabel.LayoutOrder = 999
+    titleLabel.Parent = main
+    
+    -- Divider under title
+    local divider = Instance.new("Frame")
+    divider.Name = "Divider"
+    divider.Size = UDim2.new(1, 0, 0, 1)
+    divider.Position = UDim2.new(0, 0, 0, 24)
+    divider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    divider.BorderSizePixel = 0
+    divider.LayoutOrder = 998
+    divider.Parent = main
+    
+    -- Button creation function
+    local function createButton(text, callback)
+        local btn = Instance.new("TextButton")
+        btn.Name = text.."Button"
+        btn.Size = UDim2.new(1, -10, 0, 28)
+        btn.BackgroundColor3 = Color3.fromRGB(45, 50, 55)
+        btn.TextColor3 = Color3.fromRGB(240, 240, 240)
+        btn.Text = text
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 14
+        btn.AutoButtonColor = true
+        
+        -- Hover effects
+        btn.MouseEnter:Connect(function()
+            game:GetService("TweenService"):Create(btn, TweenInfo.new(0.1), {
+                BackgroundColor3 = Color3.fromRGB(55, 60, 65)
+            }):Play()
+        end)
+        
+        btn.MouseLeave:Connect(function()
+            game:GetService("TweenService"):Create(btn, TweenInfo.new(0.1), {
+                BackgroundColor3 = Color3.fromRGB(45, 50, 55)
+            }):Play()
+        end)
+        
+        -- Corner rounding
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 6)
+        corner.Parent = btn
+        
+        -- Click event
+        btn.MouseButton1Click:Connect(function()
+            if callback then 
+                -- Click animation
+                game:GetService("TweenService"):Create(btn, TweenInfo.new(0.1), {
+                    BackgroundColor3 = Color3.fromRGB(65, 70, 75)
+                }):Play()
+                wait(0.1)
+                game:GetService("TweenService"):Create(btn, TweenInfo.new(0.1), {
+                    BackgroundColor3 = Color3.fromRGB(45, 50, 55)
+                }):Play()
+                
+                callback() 
+            end
+        end)
+        
+        btn.Parent = main
+    end
+    
+    -- Toggle creation function
+    local function createToggle(text, callback)
+        local toggleFrame = Instance.new("Frame")
+        toggleFrame.Name = text.."Toggle"
+        toggleFrame.Size = UDim2.new(1, -10, 0, 28)
+        toggleFrame.BackgroundTransparency = 1
+        toggleFrame.LayoutOrder = #main:GetChildren() + 1
+        toggleFrame.Parent = main
+        
+        local btn = Instance.new("TextButton")
+        btn.Name = "ToggleButton"
+        btn.Size = UDim2.new(1, 0, 1, 0)
+        btn.BackgroundColor3 = Color3.fromRGB(35, 40, 45)
+        btn.TextColor3 = Color3.fromRGB(240, 240, 240)
+        btn.Text = "◯ "..text
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 14
+        btn.TextXAlignment = Enum.TextXAlignment.Left
+        btn.AutoButtonColor = false
+        
+        -- Corner rounding
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 6)
+        corner.Parent = btn
+        
+        -- Toggle state indicator
+        local indicator = Instance.new("Frame")
+        indicator.Name = "Indicator"
+        indicator.Size = UDim2.new(0, 16, 0, 16)
+        indicator.Position = UDim2.new(1, -18, 0.5, -8)
+        indicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        indicator.BorderSizePixel = 0
+        
+        local indicatorCorner = Instance.new("UICorner")
+        indicatorCorner.CornerRadius = UDim.new(1, 0)
+        indicatorCorner.Parent = indicator
+        
+        indicator.Parent = btn
+        
+        local toggled = false
+        btn.MouseButton1Click:Connect(function()
+            toggled = not toggled
+            if toggled then
+                btn.Text = "● "..text
+                game:GetService("TweenService"):Create(indicator, TweenInfo.new(0.1), {
+                    BackgroundColor3 = Color3.fromRGB(100, 180, 100)
+                }):Play()
+            else
+                btn.Text = "◯ "..text
+                game:GetService("TweenService"):Create(indicator, TweenInfo.new(0.1), {
+                    BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                }):Play()
+            end
+            if callback then callback(toggled) end
+        end)
+        
+        -- Hover effects
+        btn.MouseEnter:Connect(function()
+            game:GetService("TweenService"):Create(btn, TweenInfo.new(0.1), {
+                BackgroundColor3 = Color3.fromRGB(45, 50, 55)
+            }):Play()
+        end)
+        
+        btn.MouseLeave:Connect(function()
+            game:GetService("TweenService"):Create(btn, TweenInfo.new(0.1), {
+                BackgroundColor3 = Color3.fromRGB(35, 40, 45)
+            }):Play()
+        end)
+        
+        btn.Parent = toggleFrame
+    end
+    
+    -- Textbox creation function
+    local function createTextbox(default, placeholder, callback)
+        local box = Instance.new("TextBox")
+        box.Name = "InputBox"
+        box.Size = UDim2.new(1, -10, 0, 28)
+        box.BackgroundColor3 = Color3.fromRGB(40, 45, 50)
+        box.TextColor3 = Color3.fromRGB(240, 240, 240)
+        box.PlaceholderText = placeholder or "Enter text..."
+        box.Text = default or ""
+        box.Font = Enum.Font.Gotham
+        box.TextSize = 14
+        box.ClearTextOnFocus = false
+        
+        -- Corner rounding
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 6)
+        corner.Parent = box
+        
+        -- Focus effects
+        box.Focused:Connect(function()
+            game:GetService("TweenService"):Create(box, TweenInfo.new(0.1), {
+                BackgroundColor3 = Color3.fromRGB(50, 55, 60)
+            }):Play()
+        end)
+        
+        box.FocusLost:Connect(function()
+            game:GetService("TweenService"):Create(box, TweenInfo.new(0.1), {
+                BackgroundColor3 = Color3.fromRGB(40, 45, 50)
+            }):Play()
+            if callback then callback(box.Text) end
+        end)
+        
+        box.Parent = main
+    end
+    
+    -- Add elements to the library
+    function lib:add(btnType, ...)
+        local args = {...}
+        if btnType == "btn" then
+            createButton(unpack(args))
+        elseif btnType == "toggle" then
+            createToggle(unpack(args))
+        elseif btnType == "textbox" then
+            createTextbox(unpack(args))
+        elseif btnType == "title" then
+            titleLabel.Text = args[1]
+        end
+    end
+    
+    -- Destroy the UI
+    function lib:destroy()
+        screenGui:Destroy()
+    end
+    
+    return lib
 end
 
-textbox.FocusLost:Connect(function()
-	local val = tonumber(textbox.Text)
-	if val then
-		_G.HeadSize = val
-	else
-		textbox.Text = tostring(_G.HeadSize)
-	end
-end)
-
-toggleButton.MouseButton1Click:Connect(function()
-	_G.Disabled = not _G.Disabled
-	toggleButton.Text = _G.Disabled and "Enable Hitbox" or "Disable Hitbox"
-	if not _G.Disabled then
-		for _, p in ipairs(targetPlayers) do
-			local root = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
-			if root then
-				root.Size = Vector3.new(2, 2, 2)
-				root.Transparency = 0
-				root.BrickColor = BrickColor.new("Medium stone grey")
-				root.Material = Enum.Material.Plastic
-				root.CanCollide = true
-			end
-		end
-	end
-end)
-
-RunService.RenderStepped:Connect(function()
-	if not _G.Disabled then
-		for _, p in ipairs(targetPlayers) do
-			local root = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
-			if root then
-				root.Size = Vector3.new(_G.HeadSize, _G.HeadSize, _G.HeadSize)
-				root.Transparency = 0.1
-				root.Material = Enum.Material.Neon
-				root.BrickColor = BrickColor.new("Really blue")
-				root.CanCollide = false
-			end
-		end
-	end
-end)
-
--- Minimize toggle
-local minimized = false
-minimize.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	scroll.Visible = not minimized
-	minimize.Text = minimized and "▲" or "▼"
-end)
-
--- Auto update player list
-while true do
-	updatePlayers()
-	wait(1)
-end
+return UILib
