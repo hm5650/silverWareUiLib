@@ -10,6 +10,22 @@ function UILib:Create(title)
     screenGui.Parent = game:GetService("CoreGui")
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
+    -- Create shadow as a separate frame behind main
+    local shadow = Instance.new("Frame")
+    shadow.Name = "Shadow"
+    shadow.Size = UDim2.new(1, 10, 1, 10)
+    shadow.Position = UDim2.new(0.5, -105, 0.5, -65)
+    shadow.BackgroundColor3 = Color3.new(0, 0, 0)
+    shadow.BackgroundTransparency = 0.8
+    shadow.BorderSizePixel = 0
+    shadow.ZIndex = 1
+    
+    local shadowCorner = Instance.new("UICorner")
+    shadowCorner.CornerRadius = UDim.new(0, 8)
+    shadowCorner.Parent = shadow
+    
+    shadow.Parent = screenGui
+    
     -- Main window
     local main = Instance.new("Frame")
     main.Name = "MainWindow"
@@ -20,22 +36,10 @@ function UILib:Create(title)
     main.BorderSizePixel = 0
     main.Active = true
     main.Draggable = true
+    main.ZIndex = 2
     main.Parent = screenGui
     
-    -- Window shadow effect
-    local shadow = Instance.new("ImageLabel")
-    shadow.Name = "Shadow"
-    shadow.Size = UDim2.new(1, 10, 1, 10)
-    shadow.Position = UDim2.new(0, -5, 0, -5)
-    shadow.BackgroundTransparency = 1
-    shadow.Image = "rbxassetid://1316045217"
-    shadow.ImageColor3 = Color3.new(0, 0, 0)
-    shadow.ImageTransparency = 0.8
-    shadow.ScaleType = Enum.ScaleType.Slice
-    shadow.SliceCenter = Rect.new(10, 10, 118, 118)
-    shadow.Parent = main
-    
-    -- Corner rounding
+    -- Corner rounding for main frame
     local uiCorner = Instance.new("UICorner")
     uiCorner.CornerRadius = UDim.new(0, 8)
     uiCorner.Parent = main
@@ -72,7 +76,6 @@ function UILib:Create(title)
     local divider = Instance.new("Frame")
     divider.Name = "Divider"
     divider.Size = UDim2.new(1, 0, 0, 1)
-    divider.Position = UDim2.new(0, 0, 0, 24)
     divider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     divider.BorderSizePixel = 0
     divider.LayoutOrder = 998
@@ -89,6 +92,8 @@ function UILib:Create(title)
         btn.Font = Enum.Font.Gotham
         btn.TextSize = 14
         btn.AutoButtonColor = true
+        btn.LayoutOrder = #main:GetChildren() + 1
+        btn.Parent = main
         
         -- Hover effects
         btn.MouseEnter:Connect(function()
@@ -123,8 +128,6 @@ function UILib:Create(title)
                 callback() 
             end
         end)
-        
-        btn.Parent = main
     end
     
     -- Toggle creation function
@@ -211,6 +214,8 @@ function UILib:Create(title)
         box.Font = Enum.Font.Gotham
         box.TextSize = 14
         box.ClearTextOnFocus = false
+        box.LayoutOrder = #main:GetChildren() + 1
+        box.Parent = main
         
         -- Corner rounding
         local corner = Instance.new("UICorner")
@@ -230,8 +235,6 @@ function UILib:Create(title)
             }):Play()
             if callback then callback(box.Text) end
         end)
-        
-        box.Parent = main
     end
     
     -- Add elements to the library
@@ -252,6 +255,12 @@ function UILib:Create(title)
     function lib:destroy()
         screenGui:Destroy()
     end
+    
+    -- Make the window resize automatically
+    main:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+        shadow.Size = UDim2.new(0, main.AbsoluteSize.X + 10, 0, main.AbsoluteSize.Y + 10)
+        shadow.Position = UDim2.new(0, main.AbsolutePosition.X - 5, 0, main.AbsolutePosition.Y - 5)
+    end)
     
     return lib
 end
