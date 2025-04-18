@@ -1,4 +1,5 @@
-local UILib = {}
+local UILib = loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/silverWareUiLib/refs/heads/main/SliverWareUiLib"))() or {}
+
 UILib.__index = UILib
 
 function UILib.new(title)
@@ -110,6 +111,7 @@ end
 function UILib:addBtn(name, callback)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -20, 0, 30)
+    button.Position = UDim2.new(0, 10, 0, #self.elements * 35)
     button.Text = name
     button.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
     button.TextColor3 = Color3.fromRGB(255, 150, 255)
@@ -156,6 +158,7 @@ function UILib:addToggle(name, callback)
     local toggled = false
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -20, 0, 30)
+    button.Position = UDim2.new(0, 10, 0, #self.elements * 35)
     button.Text = "☐ " .. name
     button.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
     button.TextColor3 = Color3.fromRGB(255, 150, 255)
@@ -204,6 +207,7 @@ end
 function UILib:addTextbox(placeholder, callback)
     local box = Instance.new("TextBox")
     box.Size = UDim2.new(1, -20, 0, 30)
+    box.Position = UDim2.new(0, 10, 0, #self.elements * 35)
     box.PlaceholderText = placeholder
     box.Text = ""
     box.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
@@ -238,6 +242,7 @@ end
 function UILib:addLabel(text)
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -20, 0, 20)
+    label.Position = UDim2.new(0, 10, 0, #self.elements * 35)
     label.Text = text
     label.TextColor3 = Color3.fromRGB(200, 200, 200)
     label.BackgroundTransparency = 1
