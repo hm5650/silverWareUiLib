@@ -1,147 +1,72 @@
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/silverWareUiLib/refs/heads/main/SliverWareUiLib"))()
+loadstring([[
+local Library = {}
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
--- Create the main UI container
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = game.CoreGui
+local gui = Instance.new("ScreenGui", game.CoreGui)
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 160, 0, 110)
+main.Position = UDim2.new(0.5, -80, 0.5, -60)
+main.BackgroundColor3 = Color3.fromRGB(0, 100, 50)
+main.BackgroundTransparency = 0.2
+main.Active = true
+main.Draggable = true
+main.ClipsDescendants = true
 
-local mainFrame = Instance.new("Frame")
-mainFrame.Parent = screenGui
-mainFrame.Size = UDim2.new(0, 160, 0, 110)
-mainFrame.Position = UDim2.new(0.5, -80, 0.5, -55)
-mainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.BackgroundTransparency = 0.2
+local corner = Instance.new("UICorner", main)
+corner.CornerRadius = UDim.new(0, 10)
 
-local mainCorner = Instance.new("UICorner")
-mainCorner.Parent = mainFrame
-mainCorner.CornerRadius = UDim.new(0, 10)
+local toggled = false
 
--- Add collapse button
-local collapseBtn = Instance.new("TextButton")
-collapseBtn.Parent = mainFrame
-collapseBtn.Size = UDim2.new(0, 160, 0, 20)
-collapseBtn.Position = UDim2.new(0, 0, 0, 0)
-collapseBtn.Text = "▼"
-collapseBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-collapseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-collapseBtn.BorderSizePixel = 0
+function Library:Create()
+    local elements = {}
 
-local collapseCorner = Instance.new("UICorner")
-collapseCorner.Parent = collapseBtn
-collapseCorner.CornerRadius = UDim.new(0, 10)
-
--- UI Library functionality
-local add = {
-    toggle = function(text)
-        local toggle = Instance.new("TextButton")
-        local corner = Instance.new("UICorner")
-        
-        toggle.Parent = mainFrame
-        corner.Parent = toggle
-        
-        toggle.Size = UDim2.new(0, 140, 0, 25)
-        toggle.Position = UDim2.new(0, 10, 0, 55)
-        toggle.Text = text or "Toggle"
-        toggle.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-        toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-        toggle.BorderSizePixel = 0
-        toggle.AutoButtonColor = false
-        
-        corner.CornerRadius = UDim.new(0, 10)
-        
-        local state = false
-        toggle.MouseButton1Click:Connect(function()
-            state = not state
-            toggle.BackgroundColor3 = state and Color3.fromRGB(120, 90, 90) or Color3.fromRGB(90, 90, 90)
-        end)
-        
-        return {
-            Connect = function(callback)
-                toggle.MouseButton1Click:Connect(function()
-                    callback(state)
-                end)
-            end
-        }
-    end,
-    
-    btn = function(text)
-        local button = Instance.new("TextButton")
-        local corner = Instance.new("UICorner")
-        
-        button.Parent = mainFrame
-        corner.Parent = button
-        
-        button.Size = UDim2.new(0, 140, 0, 25)
-        button.Position = UDim2.new(0, 10, 0, 85)
-        button.Text = text or "Button"
-        button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-        button.TextColor3 = Color3.fromRGB(255, 255, 255)
-        button.BorderSizePixel = 0
-        
-        corner.CornerRadius = UDim.new(0, 10)
-        
-        return {
-            Connect = function(callback)
-                button.MouseButton1Click:Connect(callback)
-            end
-        }
-    end,
-    
-    textbox = function(default)
-        local textbox = Instance.new("TextBox")
-        local corner = Instance.new("UICorner")
-        
-        textbox.Parent = mainFrame
-        corner.Parent = textbox
-        
-        textbox.Size = UDim2.new(0, 140, 0, 25)
-        textbox.Position = UDim2.new(0, 10, 0, 25)
-        textbox.Text = default or ""
-        textbox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
-        textbox.BorderSizePixel = 0
-        textbox.ClearTextOnFocus = false
-        
-        corner.CornerRadius = UDim.new(0, 10)
-        
-        return {
-            GetValue = function()
-                return textbox.Text
-            end,
-            Connect = function(callback)
-                textbox.FocusLost:Connect(function()
-                    callback(textbox.Text)
-                end)
-            end
-        }
+    function elements:add:btn(txt, callback)
+        local btn = Instance.new("TextButton", main)
+        btn.Size = UDim2.new(0, 140, 0, 25)
+        btn.Position = UDim2.new(0, 10, 0, #main:GetChildren() * 30)
+        btn.Text = txt
+        btn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        local bcorner = Instance.new("UICorner", btn)
+        bcorner.CornerRadius = UDim.new(0, 10)
+        btn.MouseButton1Click:Connect(callback)
     end
-}
 
--- Collapse functionality
-local isCollapsed = false
-collapseBtn.MouseButton1Click:Connect(function()
-    isCollapsed = not isCollapsed
-    mainFrame.Size = isCollapsed and UDim2.new(0, 160, 0, 20) or UDim2.new(0, 160, 0, 110)
-    collapseBtn.Text = isCollapsed and "▲" or "▼"
-end)
+    function elements:add:toggle(txt, callback)
+        local state = false
+        local btn = Instance.new("TextButton", main)
+        btn.Size = UDim2.new(0, 140, 0, 25)
+        btn.Position = UDim2.new(0, 10, 0, #main:GetChildren() * 30)
+        btn.Text = "Enable " .. txt
+        btn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        local bcorner = Instance.new("UICorner", btn)
+        bcorner.CornerRadius = UDim.new(0, 10)
+        btn.MouseButton1Click:Connect(function()
+            state = not state
+            btn.Text = (state and "Disable " or "Enable ") .. txt
+            callback(state)
+        end)
+    end
 
--- Example usage (you can remove this in your actual implementation)
-local myToggle = add:toggle("Enable Feature")
-local myButton = add:btn("Click Me")
-local myTextbox = add:textbox("10")
+    function elements:add:textbox(defaultText, callback)
+        local box = Instance.new("TextBox", main)
+        box.Size = UDim2.new(0, 140, 0, 25)
+        box.Position = UDim2.new(0, 10, 0, #main:GetChildren() * 30)
+        box.Text = defaultText
+        box.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        box.TextColor3 = Color3.fromRGB(255, 255, 255)
+        local bcorner = Instance.new("UICorner", box)
+        bcorner.CornerRadius = UDim.new(0, 10)
+        box.FocusLost:Connect(function()
+            callback(box.Text)
+        end)
+    end
 
-myToggle.Connect(function(state)
-    print("Toggle state:", state)
-end)
+    return elements
+end
 
-myButton.Connect(function()
-    print("Button clicked!")
-end)
-
-myTextbox.Connect(function(text)
-    print("Textbox value:", text)
-end)
-
-return add
+return Library
+]])()
