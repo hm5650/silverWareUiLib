@@ -2,7 +2,6 @@ local UILib = {}
 
 function UILib:Create(title)
     local lib = {}
-    local toggles = {}
     local minimized = false
     local originalSize = UDim2.new(0, 200, 0, 120)
     local minimizedSize = UDim2.new(0, 200, 0, 30)
@@ -13,17 +12,18 @@ function UILib:Create(title)
     screenGui.Parent = game:GetService("CoreGui")
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
-    -- Main window with outline effect
+    -- Main window with outline
     local main = Instance.new("Frame")
     main.Name = "MainWindow"
     main.Size = originalSize
     main.Position = UDim2.new(0.5, -100, 0.5, -60)
     main.BackgroundColor3 = Color3.fromRGB(20, 25, 30)
     main.BackgroundTransparency = 0.1
-    main.BorderColor3 = Color3.fromRGB(60, 60, 60)
+    main.BorderColor3 = Color3.fromRGB(60, 60, 60) -- This creates the outline
     main.BorderSizePixel = 1
     main.Active = true
     main.Draggable = true
+    main.ClipsDescendants = true -- Important for hiding elements when minimized
     main.Parent = screenGui
     
     -- Corner rounding for main frame
@@ -34,9 +34,8 @@ function UILib:Create(title)
     -- Title bar with minimize button
     local titleBar = Instance.new("Frame")
     titleBar.Name = "TitleBar"
-    titleBar.Size = UDim2.new(1, 0, 0, 24)
+    titleBar.Size = UDim2.new(1, 0, 0, 30)
     titleBar.BackgroundTransparency = 1
-    titleBar.LayoutOrder = 997
     titleBar.Parent = main
     
     local titleLabel = Instance.new("TextLabel")
@@ -56,7 +55,7 @@ function UILib:Create(title)
     local minimizeButton = Instance.new("TextButton")
     minimizeButton.Name = "MinimizeButton"
     minimizeButton.Size = UDim2.new(0, 24, 0, 24)
-    minimizeButton.Position = UDim2.new(1, -24, 0, 0)
+    minimizeButton.Position = UDim2.new(1, -24, 0.5, -12)
     minimizeButton.BackgroundTransparency = 1
     minimizeButton.TextColor3 = Color3.fromRGB(220, 220, 220)
     minimizeButton.Text = "-"
@@ -64,16 +63,7 @@ function UILib:Create(title)
     minimizeButton.TextSize = 18
     minimizeButton.Parent = titleBar
     
-    -- Divider under title
-    local divider = Instance.new("Frame")
-    divider.Name = "Divider"
-    divider.Size = UDim2.new(1, 0, 0, 1)
-    divider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    divider.BorderSizePixel = 0
-    divider.LayoutOrder = 998
-    divider.Parent = main
-    
-    -- Content frame to hold all elements
+    -- Content frame (holds all buttons/elements)
     local contentFrame = Instance.new("Frame")
     contentFrame.Name = "Content"
     contentFrame.Size = UDim2.new(1, 0, 1, -30)
@@ -262,12 +252,12 @@ function UILib:Create(title)
         local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
         
         if minimized then
-            -- Collapse
+            -- Collapse (hides contentFrame automatically due to ClipsDescendants)
             game:GetService("TweenService"):Create(main, tweenInfo, {
                 Size = minimizedSize
             }):Play()
         else
-            -- Expand
+            -- Expand (reveals contentFrame)
             game:GetService("TweenService"):Create(main, tweenInfo, {
                 Size = originalSize
             }):Play()
