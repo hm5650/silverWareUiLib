@@ -1,72 +1,96 @@
-loadstring([[
-local Library = {}
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
+local UILib = {}
 
-local gui = Instance.new("ScreenGui", game.CoreGui)
-local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 160, 0, 110)
-main.Position = UDim2.new(0.5, -80, 0.5, -60)
-main.BackgroundColor3 = Color3.fromRGB(0, 100, 50)
-main.BackgroundTransparency = 0.2
-main.Active = true
-main.Draggable = true
-main.ClipsDescendants = true
+function UILib:Create(title)
+    local lib = {}
+    local toggles = {}
+    local screenGui = Instance.new("ScreenGui", game.CoreGui)
+    local main = Instance.new("Frame", screenGui)
+    main.Size = UDim2.new(0, 160, 0, 110)
+    main.Position = UDim2.new(0.5, -80, 0.5, -60)
+    main.BackgroundColor3 = Color3.fromRGB(0, 50, 50)
+    main.BackgroundTransparency = 0.2
+    main.BorderSizePixel = 0
+    main.Active = true
+    main.Draggable = true
 
-local corner = Instance.new("UICorner", main)
-corner.CornerRadius = UDim.new(0, 10)
+    local uiCorner = Instance.new("UICorner", main)
+    uiCorner.CornerRadius = UDim.new(0, 10)
 
-local toggled = false
+    local layout = Instance.new("UIListLayout", main)
+    layout.Padding = UDim.new(0, 5)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
 
-function Library:Create()
-    local elements = {}
-
-    function elements:add:btn(txt, callback)
+    local function createButton(text, callback)
         local btn = Instance.new("TextButton", main)
-        btn.Size = UDim2.new(0, 140, 0, 25)
-        btn.Position = UDim2.new(0, 10, 0, #main:GetChildren() * 30)
-        btn.Text = txt
-        btn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+        btn.Size = UDim2.new(1, -10, 0, 25)
+        btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        local bcorner = Instance.new("UICorner", btn)
-        bcorner.CornerRadius = UDim.new(0, 10)
-        btn.MouseButton1Click:Connect(callback)
-    end
+        btn.Text = text
+        btn.AutoButtonColor = true
 
-    function elements:add:toggle(txt, callback)
-        local state = false
-        local btn = Instance.new("TextButton", main)
-        btn.Size = UDim2.new(0, 140, 0, 25)
-        btn.Position = UDim2.new(0, 10, 0, #main:GetChildren() * 30)
-        btn.Text = "Enable " .. txt
-        btn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        local bcorner = Instance.new("UICorner", btn)
-        bcorner.CornerRadius = UDim.new(0, 10)
+        local corner = Instance.new("UICorner", btn)
+        corner.CornerRadius = UDim.new(0, 10)
+
         btn.MouseButton1Click:Connect(function()
-            state = not state
-            btn.Text = (state and "Disable " or "Enable ") .. txt
-            callback(state)
+            if callback then callback() end
         end)
     end
 
-    function elements:add:textbox(defaultText, callback)
+    local function createToggle(text, callback)
+        local btn = Instance.new("TextButton", main)
+        btn.Size = UDim2.new(1, -10, 0, 25)
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Text = "OFF - " .. text
+
+        local corner = Instance.new("UICorner", btn)
+        corner.CornerRadius = UDim.new(0, 10)
+
+        local toggled = false
+        btn.MouseButton1Click:Connect(function()
+            toggled = not toggled
+            btn.Text = (toggled and "ON - " or "OFF - ") .. text
+            if callback then callback(toggled) end
+        end)
+    end
+
+    local function createTextbox(default, callback)
         local box = Instance.new("TextBox", main)
-        box.Size = UDim2.new(0, 140, 0, 25)
-        box.Position = UDim2.new(0, 10, 0, #main:GetChildren() * 30)
-        box.Text = defaultText
+        box.Size = UDim2.new(1, -10, 0, 25)
         box.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         box.TextColor3 = Color3.fromRGB(255, 255, 255)
-        local bcorner = Instance.new("UICorner", box)
-        bcorner.CornerRadius = UDim.new(0, 10)
+        box.Text = default
+
+        local corner = Instance.new("UICorner", box)
+        corner.CornerRadius = UDim.new(0, 10)
+
         box.FocusLost:Connect(function()
-            callback(box.Text)
+            if callback then callback(box.Text) end
         end)
     end
 
-    return elements
+    local titleLabel = Instance.new("TextLabel", main)
+    titleLabel.Size = UDim2.new(1, -10, 0, 20)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.Text = title or "UI"
+    titleLabel.TextYAlignment = Enum.TextYAlignment.Bottom
+    titleLabel.LayoutOrder = 999
+
+    function lib:add(btnType, ...)
+        local args = {...}
+        if btnType == "btn" then
+            createButton(unpack(args))
+        elseif btnType == "toggle" then
+            createToggle(unpack(args))
+        elseif btnType == "textbox" then
+            createTextbox(unpack(args))
+        elseif btnType == "title" then
+            titleLabel.Text = args[1]
+        end
+    end
+
+    return lib
 end
 
-return Library
-]])()
+return UILib
