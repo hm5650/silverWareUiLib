@@ -13,61 +13,23 @@ function UILib:Create(title)
     screenGui.Parent = game:GetService("CoreGui")
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
-    -- Create container for shadow and main window
-    local container = Instance.new("Frame")
-    container.Name = "Container"
-    container.Size = originalSize
-    container.Position = UDim2.new(0.5, -100, 0.5, -60)
-    container.BackgroundTransparency = 1
-    container.ClipsDescendants = true
-    container.Parent = screenGui
-    
-    -- Create shadow as a separate frame behind main
-    local shadow = Instance.new("Frame")
-    shadow.Name = "Shadow"
-    shadow.Size = UDim2.new(1, 10, 1, 10)
-    shadow.Position = UDim2.new(0, -5, 0, -5)
-    shadow.BackgroundColor3 = Color3.new(0, 0, 0)
-    shadow.BackgroundTransparency = 0.8
-    shadow.BorderSizePixel = 0
-    shadow.ZIndex = 1
-    
-    local shadowCorner = Instance.new("UICorner")
-    shadowCorner.CornerRadius = UDim.new(0, 8)
-    shadowCorner.Parent = shadow
-    
-    shadow.Parent = container
-    
-    -- Main window
+    -- Main window with outline effect
     local main = Instance.new("Frame")
     main.Name = "MainWindow"
-    main.Size = UDim2.new(1, 0, 1, 0)
+    main.Size = originalSize
+    main.Position = UDim2.new(0.5, -100, 0.5, -60)
     main.BackgroundColor3 = Color3.fromRGB(20, 25, 30)
     main.BackgroundTransparency = 0.1
-    main.BorderSizePixel = 0
+    main.BorderColor3 = Color3.fromRGB(60, 60, 60)
+    main.BorderSizePixel = 1
     main.Active = true
     main.Draggable = true
-    main.ZIndex = 2
-    main.Parent = container
+    main.Parent = screenGui
     
     -- Corner rounding for main frame
     local uiCorner = Instance.new("UICorner")
     uiCorner.CornerRadius = UDim.new(0, 8)
     uiCorner.Parent = main
-    
-    -- Layout for elements
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 6)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Parent = main
-    
-    -- Padding inside main frame
-    local padding = Instance.new("UIPadding")
-    padding.PaddingTop = UDim.new(0, 8)
-    padding.PaddingBottom = UDim.new(0, 8)
-    padding.PaddingLeft = UDim.new(0, 8)
-    padding.PaddingRight = UDim.new(0, 8)
-    padding.Parent = main
     
     -- Title bar with minimize button
     local titleBar = Instance.new("Frame")
@@ -111,7 +73,7 @@ function UILib:Create(title)
     divider.LayoutOrder = 998
     divider.Parent = main
     
-    -- Content frame to hold all elements (for collapsing)
+    -- Content frame to hold all elements
     local contentFrame = Instance.new("Frame")
     contentFrame.Name = "Content"
     contentFrame.Size = UDim2.new(1, 0, 1, -30)
@@ -119,8 +81,18 @@ function UILib:Create(title)
     contentFrame.BackgroundTransparency = 1
     contentFrame.Parent = main
     
-    -- Move layout to content frame
+    -- Layout for elements
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 6)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Parent = contentFrame
+    
+    -- Padding inside content frame
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0, 8)
+    padding.PaddingBottom = UDim.new(0, 8)
+    padding.PaddingLeft = UDim.new(0, 8)
+    padding.PaddingRight = UDim.new(0, 8)
     padding.Parent = contentFrame
     
     -- Button creation function
@@ -137,6 +109,11 @@ function UILib:Create(title)
         btn.LayoutOrder = #contentFrame:GetChildren() + 1
         btn.Parent = contentFrame
         
+        -- Corner rounding
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 6)
+        corner.Parent = btn
+        
         -- Hover effects
         btn.MouseEnter:Connect(function()
             game:GetService("TweenService"):Create(btn, TweenInfo.new(0.1), {
@@ -149,11 +126,6 @@ function UILib:Create(title)
                 BackgroundColor3 = Color3.fromRGB(45, 50, 55)
             }):Play()
         end)
-        
-        -- Corner rounding
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 6)
-        corner.Parent = btn
         
         -- Click event
         btn.MouseButton1Click:Connect(function()
@@ -291,19 +263,13 @@ function UILib:Create(title)
         
         if minimized then
             -- Collapse
-            game:GetService("TweenService"):Create(container, tweenInfo, {
+            game:GetService("TweenService"):Create(main, tweenInfo, {
                 Size = minimizedSize
-            }):Play()
-            game:GetService("TweenService"):Create(shadow, tweenInfo, {
-                Size = UDim2.new(1, 10, 1, 10)
             }):Play()
         else
             -- Expand
-            game:GetService("TweenService"):Create(container, tweenInfo, {
+            game:GetService("TweenService"):Create(main, tweenInfo, {
                 Size = originalSize
-            }):Play()
-            game:GetService("TweenService"):Create(shadow, tweenInfo, {
-                Size = UDim2.new(1, 10, 1, 10)
             }):Play()
         end
     end)
@@ -326,11 +292,6 @@ function UILib:Create(title)
     function lib:destroy()
         screenGui:Destroy()
     end
-    
-    -- Make the shadow follow the container
-    container:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
-        shadow.Position = UDim2.new(0, -5, 0, -5)
-    end)
     
     return lib
 end
