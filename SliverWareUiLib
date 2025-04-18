@@ -5,78 +5,92 @@ function UILib.new(title)
     local self = setmetatable({}, UILib)
 
     local gui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-    local frame = Instance.new("Frame", gui)
-    frame.Size = UDim2.new(0, 160, 0, 110)
-    frame.Position = UDim2.new(0.5, -80, 0.5, -50)
-    frame.BackgroundColor3 = Color3.fromRGB(32, 50, 50)
-    frame.BackgroundTransparency = 0.2
-    frame.Active = true
-    frame.Draggable = true
-    frame.ClipsDescendants = true
+    gui.ResetOnSpawn = false
 
-    local corner = Instance.new("UICorner", frame)
-    corner.CornerRadius = UDim.new(0, 10)
+    local main = Instance.new("Frame", gui)
+    main.Size = UDim2.new(0, 160, 0, 110)
+    main.Position = UDim2.new(0.5, -80, 0.5, -55)
+    main.BackgroundColor3 = Color3.fromRGB(32, 50, 50)
+    main.BackgroundTransparency = 0.2
+    main.BorderSizePixel = 0
+    main.Active = true
+    main.Draggable = true
+    main.ClipsDescendants = true
+
+    Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
+
+    local minimize = Instance.new("TextButton", main)
+    minimize.Size = UDim2.new(0, 20, 0, 20)
+    minimize.Position = UDim2.new(0, 0, 0, 0)
+    minimize.Text = "▼"
+    minimize.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    minimize.TextColor3 = Color3.fromRGB(255, 150, 255)
+    Instance.new("UICorner", minimize).CornerRadius = UDim.new(0, 10)
+
+    local scroll = Instance.new("ScrollingFrame", main)
+    scroll.Size = UDim2.new(1, 0, 1, -22)
+    scroll.Position = UDim2.new(0, 0, 0, 22)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scroll.ScrollBarThickness = 6
+    scroll.BackgroundTransparency = 1
+    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+    local list = Instance.new("UIListLayout", scroll)
+    list.Padding = UDim.new(0, 6)
+    list.SortOrder = Enum.SortOrder.LayoutOrder
 
     self.gui = gui
-    self.frame = frame
-    self.elements = {}
+    self.frame = main
+    self.scroll = scroll
+    self.minimized = false
+
+    minimize.MouseButton1Click:Connect(function()
+        self.minimized = not self.minimized
+        scroll.Visible = not self.minimized
+        minimize.Text = self.minimized and "▲" or "▼"
+        main.Size = self.minimized and UDim2.new(0, 160, 0, 22) or UDim2.new(0, 160, 0, 110)
+    end)
 
     return self
 end
 
 function UILib:addBtn(name, callback)
-    local button = Instance.new("TextButton", self.frame)
-    button.Size = UDim2.new(0, 120, 0, 25)
-    button.Position = UDim2.new(0, 20, 0, #self.elements * 30 + 5)
-    button.Text = name
-    button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-    button.TextColor3 = Color3.fromRGB(255, 150, 255)
-
-    local corner = Instance.new("UICorner", button)
-    corner.CornerRadius = UDim.new(0, 10)
-
-    button.MouseButton1Click:Connect(callback)
-
-    table.insert(self.elements, button)
+    local btn = Instance.new("TextButton", self.scroll)
+    btn.Size = UDim2.new(1, -12, 0, 25)
+    btn.Text = name
+    btn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+    btn.TextColor3 = Color3.fromRGB(255, 150, 255)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+    btn.MouseButton1Click:Connect(callback)
 end
 
 function UILib:addToggle(name, callback)
     local toggled = false
-    local button = Instance.new("TextButton", self.frame)
-    button.Size = UDim2.new(0, 120, 0, 25)
-    button.Position = UDim2.new(0, 20, 0, #self.elements * 30 + 5)
-    button.Text = "Enable " .. name
-    button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-    button.TextColor3 = Color3.fromRGB(255, 150, 255)
+    local btn = Instance.new("TextButton", self.scroll)
+    btn.Size = UDim2.new(1, -12, 0, 25)
+    btn.Text = "Enable " .. name
+    btn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+    btn.TextColor3 = Color3.fromRGB(255, 150, 255)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
 
-    local corner = Instance.new("UICorner", button)
-    corner.CornerRadius = UDim.new(0, 10)
-
-    button.MouseButton1Click:Connect(function()
+    btn.MouseButton1Click:Connect(function()
         toggled = not toggled
-        button.Text = (toggled and "Disable " or "Enable ") .. name
+        btn.Text = (toggled and "Disable " or "Enable ") .. name
         callback(toggled)
     end)
-
-    table.insert(self.elements, button)
 end
 
 function UILib:addTextbox(placeholder, callback)
-    local box = Instance.new("TextBox", self.frame)
-    box.Size = UDim2.new(0, 120, 0, 25)
-    box.Position = UDim2.new(0, 20, 0, #self.elements * 30 + 5)
+    local box = Instance.new("TextBox", self.scroll)
+    box.Size = UDim2.new(1, -12, 0, 25)
     box.Text = placeholder
     box.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     box.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-    local corner = Instance.new("UICorner", box)
-    corner.CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 10)
 
     box.FocusLost:Connect(function()
         callback(box.Text)
     end)
-
-    table.insert(self.elements, box)
 end
 
 return UILib
