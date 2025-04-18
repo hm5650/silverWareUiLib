@@ -1,211 +1,118 @@
-local UILib = {}
-UILib.__index = UILib
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/silverWareUiLib/refs/heads/main/SliverWareUiLib"))()
 
--- Default theme colors
-local DEFAULT_THEME = {
-    Background = Color3.fromRGB(40, 40, 45),
-    Header = Color3.fromRGB(50, 50, 55),
-    Button = Color3.fromRGB(70, 70, 80),
-    ButtonHover = Color3.fromRGB(90, 90, 100),
-    ToggleOn = Color3.fromRGB(100, 200, 100),
-    ToggleOff = Color3.fromRGB(200, 100, 100),
-    Text = Color3.fromRGB(240, 240, 240),
-    Accent = Color3.fromRGB(255, 150, 255),
-    TextBox = Color3.fromRGB(60, 60, 65),
-    ScrollBar = Color3.fromRGB(100, 100, 110),
-    Dropdown = Color3.fromRGB(60, 60, 70),
-    DropdownItem = Color3.fromRGB(80, 80, 90),
-    DropdownItemHover = Color3.fromRGB(100, 100, 110),
-    Slider = Color3.fromRGB(80, 80, 90),
-    SliderBar = Color3.fromRGB(255, 150, 255)
+local ui = library:Create{
+    Name = "UI Library",
+    Size = UDim2.new(0, 160, 0, 110),
+    Theme = {
+        Background = Color3.fromRGB(50, 50, 50),
+        Glow = Color3.fromRGB(255, 255, 255),
+        Accent = Color3.fromRGB(80, 80, 80),
+        LightContrast = Color3.fromRGB(70, 70, 70),
+        DarkContrast = Color3.fromRGB(20, 20, 20), 
+        TextColor = Color3.fromRGB(255, 255, 255)
+    }
 }
 
-function UILib.new(title, customTheme)
-    local self = setmetatable({}, UILib)
-    
-    -- Apply custom theme or default
-    self.Theme = customTheme or DEFAULT_THEME
-    
-    -- Create main GUI container
-    self.gui = Instance.new("ScreenGui")
-    self.gui.Name = "UILib"
-    self.gui.ResetOnSpawn = false
-    self.gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    self.gui.Parent = game:GetService("CoreGui")
-    
-    -- Main window frame
-    self.frame = Instance.new("Frame")
-    self.frame.Name = "MainWindow"
-    self.frame.Size = UDim2.new(0, 200, 0, 300) -- Default size
-    self.frame.Position = UDim2.new(0.5, -100, 0.3, 0)
-    self.frame.BackgroundColor3 = self.Theme.Background
-    self.frame.BackgroundTransparency = 0.1
-    self.frame.BorderSizePixel = 0
-    self.frame.Active = true
-    self.frame.Draggable = true
-    self.frame.ClipsDescendants = true
-    self.frame.Parent = self.gui
-    
-    -- Window corner rounding
-    local corner = Instance.new("UICorner", self.frame)
-    corner.CornerRadius = UDim.new(0, 8)
-    
-    -- Header with title and controls
-    local header = Instance.new("Frame", self.frame)
-    header.Name = "Header"
-    header.Size = UDim2.new(1, 0, 0, 30)
-    header.Position = UDim2.new(0, 0, 0, 0)
-    header.BackgroundColor3 = self.Theme.Header
-    header.BorderSizePixel = 0
-    
-    local headerCorner = Instance.new("UICorner", header)
-    headerCorner.CornerRadius = UDim.new(0, 8)
-    
-    -- Title label
-    local titleLabel = Instance.new("TextLabel", header)
-    titleLabel.Name = "Title"
-    titleLabel.Size = UDim2.new(1, -60, 1, 0)
-    titleLabel.Position = UDim2.new(0, 10, 0, 0)
-    titleLabel.Text = title or "UI Library"
-    titleLabel.TextColor3 = self.Theme.Accent
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Font = Enum.Font.GothamSemibold
-    titleLabel.TextSize = 14
-    
-    -- Minimize button
-    self.minimizeBtn = Instance.new("TextButton", header)
-    self.minimizeBtn.Name = "MinimizeButton"
-    self.minimizeBtn.Size = UDim2.new(0, 20, 0, 20)
-    self.minimizeBtn.Position = UDim2.new(1, -25, 0.5, -10)
-    self.minimizeBtn.Text = "-"
-    self.minimizeBtn.BackgroundColor3 = self.Theme.Button
-    self.minimizeBtn.TextColor3 = self.Theme.Text
-    self.minimizeBtn.Font = Enum.Font.GothamBold
-    self.minimizeBtn.TextSize = 16
-    Instance.new("UICorner", self.minimizeBtn).CornerRadius = UDim.new(0, 4)
-    
-    -- Close button
-    local closeBtn = Instance.new("TextButton", header)
-    closeBtn.Name = "CloseButton"
-    closeBtn.Size = UDim2.new(0, 20, 0, 20)
-    closeBtn.Position = UDim2.new(1, -50, 0.5, -10)
-    closeBtn.Text = "X"
-    closeBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-    closeBtn.TextColor3 = self.Theme.Text
-    closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.TextSize = 14
-    Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 4)
-    
-    -- Content area
-    self.scroll = Instance.new("ScrollingFrame", self.frame)
-    self.scroll.Name = "Content"
-    self.scroll.Size = UDim2.new(1, 0, 1, -30)
-    self.scroll.Position = UDim2.new(0, 0, 0, 30)
-    self.scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-    self.scroll.ScrollBarThickness = 6
-    self.scroll.ScrollBarImageColor3 = self.Theme.ScrollBar
-    self.scroll.BackgroundTransparency = 1
-    self.scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    self.scroll.Visible = true
-    
-    local list = Instance.new("UIListLayout", self.scroll)
-    list.Name = "ListLayout"
-    list.Padding = UDim.new(0, 8)
-    list.SortOrder = Enum.SortOrder.LayoutOrder
-    
-    local padding = Instance.new("UIPadding", self.scroll)
-    padding.PaddingLeft = UDim.new(0, 8)
-    padding.PaddingRight = UDim.new(0, 8)
-    padding.PaddingTop = UDim.new(0, 8)
-    padding.PaddingBottom = UDim.new(0, 8)
-    
-    -- State variables
-    self.minimized = false
-    self.elements = {}
-    self.tweenService = game:GetService("TweenService")
-    self.preMinimizeSize = self.frame.Size
-    
-    -- Button hover effects
-    local function setupButtonHover(button)
-        local originalColor = button.BackgroundColor3
+local add = {
+    toggle = function(text)
+        local toggle = Instance.new("TextButton")
+        local corner = Instance.new("UICorner")
         
-        button.MouseEnter:Connect(function()
-            button.BackgroundColor3 = self.Theme.ButtonHover
+        toggle.Parent = ui.Main
+        corner.Parent = toggle
+        
+        toggle.Size = UDim2.new(0, 140, 0, 25)
+        toggle.Position = UDim2.new(0, 10, 0, 55)
+        toggle.Text = text or "Toggle"
+        toggle.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+        toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        toggle.BorderSizePixel = 0
+        toggle.AutoButtonColor = false
+        
+        corner.CornerRadius = UDim.new(0, 10)
+        
+        local state = false
+        toggle.MouseButton1Click:Connect(function()
+            state = not state
+            toggle.BackgroundColor3 = state and Color3.fromRGB(120, 90, 90) or Color3.fromRGB(90, 90, 90)
+            return state
         end)
         
-        button.MouseLeave:Connect(function()
-            button.BackgroundColor3 = originalColor
-        end)
+        return {
+            Connect = function(callback)
+                toggle.MouseButton1Click:Connect(function()
+                    callback(state)
+                end)
+            end
+        }
+    end,
+    
+    btn = function(text)
+        local button = Instance.new("TextButton")
+        local corner = Instance.new("UICorner")
+        
+        button.Parent = ui.Main
+        corner.Parent = button
+        
+        button.Size = UDim2.new(0, 140, 0, 25)
+        button.Position = UDim2.new(0, 10, 0, 55)
+        button.Text = text or "Button"
+        button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+        button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        button.BorderSizePixel = 0
+        
+        corner.CornerRadius = UDim.new(0, 10)
+        
+        return {
+            Connect = function(callback)
+                button.MouseButton1Click:Connect(callback)
+            end
+        }
+    end,
+    
+    textbox = function(default)
+        local textbox = Instance.new("TextBox")
+        local corner = Instance.new("UICorner")
+        
+        textbox.Parent = ui.Main
+        corner.Parent = textbox
+        
+        textbox.Size = UDim2.new(0, 140, 0, 25)
+        textbox.Position = UDim2.new(0, 10, 0, 25)
+        textbox.Text = default or ""
+        textbox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
+        textbox.BorderSizePixel = 0
+        textbox.ClearTextOnFocus = false
+        
+        corner.CornerRadius = UDim.new(0, 10)
+        
+        return {
+            GetValue = function()
+                return textbox.Text
+            end,
+            Connect = function(callback)
+                textbox.FocusLost:Connect(function()
+                    callback(textbox.Text)
+                end)
+            end
+        }
     end
-    
-    -- Set up button hovers
-    setupButtonHover(self.minimizeBtn)
-    setupButtonHover(closeBtn)
-    
-    -- Minimize button functionality
-    self.minimizeBtn.MouseButton1Click:Connect(function()
-        self:toggleMinimize()
-    end)
-    
-    -- Close button functionality
-    closeBtn.MouseButton1Click:Connect(function()
-        self:destroy()
-    end)
-    
-    -- Update the frame size when content changes
-    list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        if not self.minimized then
-            self:updateFrameSize()
-        end
-    end)
-    
-    return self
-end
+}
 
-function UILib:updateFrameSize()
-    local contentHeight = self.scroll.UIListLayout.AbsoluteContentSize.Y
-    local padding = self.scroll.UIPadding.PaddingTop.Offset + self.scroll.UIPadding.PaddingBottom.Offset
-    local headerHeight = 30
-    local totalHeight = contentHeight + padding + headerHeight
-    
-    -- Ensure minimum height
-    totalHeight = math.max(totalHeight, 100)
-    
-    -- Update frame size
-    self.frame.Size = UDim2.new(0, 200, 0, totalHeight)
-    self.preMinimizeSize = self.frame.Size
-end
+-- Example usage:
+local myToggle = add:toggle("Enable Feature")
+local myButton = add:btn("Click Me")
+local myTextbox = add:textbox("10")
 
-function UILib:toggleMinimize()
-    self.minimized = not self.minimized
-    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    
-    if self.minimized then
-        -- Store current size before minimizing
-        self.preMinimizeSize = self.frame.Size
-        local tween = self.tweenService:Create(self.frame, tweenInfo, {Size = UDim2.new(0, 200, 0, 30)})
-        tween:Play()
-        self.minimizeBtn.Text = "+"
-        self.scroll.Visible = false
-    else
-        -- Show content first so we can calculate proper size
-        self.scroll.Visible = true
-        
-        -- Wait for the layout to update
-        task.wait(0.05)
-        
-        -- Update to proper content size
-        self:updateFrameSize()
-        
-        -- Animate the expansion
-        local tween = self.tweenService:Create(self.frame, tweenInfo, {Size = self.preMinimizeSize})
-        tween:Play()
-        self.minimizeBtn.Text = "-"
-    end
-end
+myToggle.Connect(function(state)
+    print("Toggle state:", state)
+end)
 
--- [Rest of the functions remain exactly the same as in the previous enhanced version]
--- (addSection, addButton, addToggle, addTextbox, addSlider, addDropdown, addLabel, etc.)
+myButton.Connect(function()
+    print("Button clicked!")
+end)
 
-return UILib
+myTextbox.Connect(function(text)
+    print("Textbox value:", text)
+end)
