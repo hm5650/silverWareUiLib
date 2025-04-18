@@ -1,24 +1,44 @@
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/silverWareUiLib/refs/heads/main/SliverWareUiLib"))()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/vozoid/ui-backups/main/modified-sylveon"))()
 
-local ui = library:Create{
-    Name = "UI Library",
-    Size = UDim2.new(0, 160, 0, 110),
-    Theme = {
-        Background = Color3.fromRGB(50, 50, 50),
-        Glow = Color3.fromRGB(255, 255, 255),
-        Accent = Color3.fromRGB(80, 80, 80),
-        LightContrast = Color3.fromRGB(70, 70, 70),
-        DarkContrast = Color3.fromRGB(20, 20, 20), 
-        TextColor = Color3.fromRGB(255, 255, 255)
-    }
-}
+-- Create the main UI container
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.CoreGui
 
+local mainFrame = Instance.new("Frame")
+mainFrame.Parent = screenGui
+mainFrame.Size = UDim2.new(0, 160, 0, 110)
+mainFrame.Position = UDim2.new(0.5, -80, 0.5, -55)
+mainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.BackgroundTransparency = 0.2
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.Parent = mainFrame
+mainCorner.CornerRadius = UDim.new(0, 10)
+
+-- Add collapse button
+local collapseBtn = Instance.new("TextButton")
+collapseBtn.Parent = mainFrame
+collapseBtn.Size = UDim2.new(0, 160, 0, 20)
+collapseBtn.Position = UDim2.new(0, 0, 0, 0)
+collapseBtn.Text = "▼"
+collapseBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+collapseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+collapseBtn.BorderSizePixel = 0
+
+local collapseCorner = Instance.new("UICorner")
+collapseCorner.Parent = collapseBtn
+collapseCorner.CornerRadius = UDim.new(0, 10)
+
+-- UI Library functionality
 local add = {
     toggle = function(text)
         local toggle = Instance.new("TextButton")
         local corner = Instance.new("UICorner")
         
-        toggle.Parent = ui.Main
+        toggle.Parent = mainFrame
         corner.Parent = toggle
         
         toggle.Size = UDim2.new(0, 140, 0, 25)
@@ -35,7 +55,6 @@ local add = {
         toggle.MouseButton1Click:Connect(function()
             state = not state
             toggle.BackgroundColor3 = state and Color3.fromRGB(120, 90, 90) or Color3.fromRGB(90, 90, 90)
-            return state
         end)
         
         return {
@@ -51,11 +70,11 @@ local add = {
         local button = Instance.new("TextButton")
         local corner = Instance.new("UICorner")
         
-        button.Parent = ui.Main
+        button.Parent = mainFrame
         corner.Parent = button
         
         button.Size = UDim2.new(0, 140, 0, 25)
-        button.Position = UDim2.new(0, 10, 0, 55)
+        button.Position = UDim2.new(0, 10, 0, 85)
         button.Text = text or "Button"
         button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
         button.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -74,7 +93,7 @@ local add = {
         local textbox = Instance.new("TextBox")
         local corner = Instance.new("UICorner")
         
-        textbox.Parent = ui.Main
+        textbox.Parent = mainFrame
         corner.Parent = textbox
         
         textbox.Size = UDim2.new(0, 140, 0, 25)
@@ -100,7 +119,15 @@ local add = {
     end
 }
 
--- Example usage:
+-- Collapse functionality
+local isCollapsed = false
+collapseBtn.MouseButton1Click:Connect(function()
+    isCollapsed = not isCollapsed
+    mainFrame.Size = isCollapsed and UDim2.new(0, 160, 0, 20) or UDim2.new(0, 160, 0, 110)
+    collapseBtn.Text = isCollapsed and "▲" or "▼"
+end)
+
+-- Example usage (you can remove this in your actual implementation)
 local myToggle = add:toggle("Enable Feature")
 local myButton = add:btn("Click Me")
 local myTextbox = add:textbox("10")
@@ -116,3 +143,5 @@ end)
 myTextbox.Connect(function(text)
     print("Textbox value:", text)
 end)
+
+return add
