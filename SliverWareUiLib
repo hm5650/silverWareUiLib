@@ -1,485 +1,130 @@
-local UILib = loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/silverWareUiLib/refs/heads/main/SliverWareUiLib"))() or {}
-
+local UILib = {}
 UILib.__index = UILib
 
--- Constants for consistent styling
-local COLORS = {
-    BACKGROUND = Color3.fromRGB(25, 25, 35),
-    TITLE_BAR = Color3.fromRGB(40, 40, 50),
-    ACCENT = Color3.fromRGB(255, 150, 255),
-    BUTTON = Color3.fromRGB(60, 60, 70),
-    BUTTON_HOVER = Color3.fromRGB(80, 80, 90),
-    BUTTON_PRESSED = Color3.fromRGB(100, 100, 110),
-    TEXTBOX = Color3.fromRGB(50, 50, 60),
-    TEXTBOX_FOCUSED = Color3.fromRGB(70, 70, 80),
-    TEXT = Color3.fromRGB(200, 200, 200),
-    CLOSE_BUTTON = Color3.fromRGB(255, 100, 100)
-}
-
-local FONTS = {
-    TITLE = Enum.Font.GothamBold,
-    BODY = Enum.Font.Gotham
-}
-
-local SIZES = {
-    TITLE = 14,
-    BODY = 13,
-    SMALL = 12
-}
-
-local CORNER_RADIUS = 8
-local ELEMENT_HEIGHT = 30
-local ELEMENT_SPACING = 5
-local PADDING = 10
-
-function UILib.new(title, options)
+function UILib.new(title)
     local self = setmetatable({}, UILib)
-    
-    options = options or {}
-    local defaultSize = options.defaultSize or UDim2.new(0, 250, 0, 30)
-    local defaultPosition = options.defaultPosition or UDim2.new(0.5, -125, 0.5, -15)
-    local accentColor = options.accentColor or COLORS.ACCENT
-    
-    -- Create main GUI
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "SilverWareUI_"..tostring(math.random(1, 10000))
-    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    gui.Parent = game:GetService("CoreGui")
-    
-    -- Main frame
-    local frame = Instance.new("Frame")
-    frame.Size = defaultSize
-    frame.Position = defaultPosition
-    frame.BackgroundColor3 = COLORS.BACKGROUND
-    frame.BackgroundTransparency = 0.1
-    frame.Active = true
-    frame.Draggable = true
-    frame.ClipsDescendants = true
-    frame.Parent = gui
-    
-    -- Corner rounding
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, CORNER_RADIUS)
-    corner.Parent = frame
-    
-    -- Drop shadow
-    local shadow = Instance.new("ImageLabel")
-    shadow.Name = "Shadow"
-    shadow.Image = "rbxassetid://1316045217"
-    shadow.ImageColor3 = Color3.new(0, 0, 0)
-    shadow.ImageTransparency = 0.8
-    shadow.ScaleType = Enum.ScaleType.Slice
-    shadow.SliceCenter = Rect.new(10, 10, 118, 118)
-    shadow.Size = UDim2.new(1, 10, 1, 10)
-    shadow.Position = UDim2.new(0, -5, 0, -5)
-    shadow.BackgroundTransparency = 1
-    shadow.Parent = frame
-    shadow.ZIndex = -1
-    
-    -- Title bar
-    local titleBar = Instance.new("Frame")
-    titleBar.Size = UDim2.new(1, 0, 0, ELEMENT_HEIGHT)
-    titleBar.BackgroundColor3 = COLORS.TITLE_BAR
-    titleBar.BackgroundTransparency = 0.3
-    titleBar.Parent = frame
-    
-    local titleCorner = Instance.new("UICorner")
-    titleCorner.CornerRadius = UDim.new(0, CORNER_RADIUS)
-    titleCorner.Parent = titleBar
-    
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, -10, 1, 0)
-    titleLabel.Position = UDim2.new(0, PADDING, 0, 0)
-    titleLabel.Text = title or "SilverWare UI"
-    titleLabel.TextColor3 = accentColor
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Font = FONTS.TITLE
-    titleLabel.TextSize = SIZES.TITLE
-    titleLabel.Parent = titleBar
-    
-    -- Close button
-    local closeBtn = Instance.new("TextButton")
-    closeBtn.Size = UDim2.new(0, 20, 0, 20)
-    closeBtn.Position = UDim2.new(1, -25, 0.5, -10)
-    closeBtn.Text = "X"
-    closeBtn.TextColor3 = COLORS.CLOSE_BUTTON
-    closeBtn.BackgroundTransparency = 1
-    closeBtn.Font = FONTS.TITLE
-    closeBtn.TextSize = SIZES.TITLE
-    closeBtn.Parent = titleBar
-    
-    -- Minimize button
-    local minimizeBtn = Instance.new("TextButton")
-    minimizeBtn.Size = UDim2.new(0, 20, 0, 20)
-    minimizeBtn.Position = UDim2.new(1, -50, 0.5, -10)
-    minimizeBtn.Text = "-"
-    minimizeBtn.TextColor3 = COLORS.TEXT
-    minimizeBtn.BackgroundTransparency = 1
-    minimizeBtn.Font = FONTS.TITLE
-    minimizeBtn.TextSize = SIZES.TITLE
-    minimizeBtn.Parent = titleBar
-    
-    -- Content frame (where elements will go)
-    local contentFrame = Instance.new("Frame")
-    contentFrame.Size = UDim2.new(1, 0, 1, -ELEMENT_HEIGHT)
-    contentFrame.Position = UDim2.new(0, 0, 0, ELEMENT_HEIGHT)
-    contentFrame.BackgroundTransparency = 1
-    contentFrame.Parent = frame
-    
-    -- Scrolling frame for many elements
-    local scrollFrame = Instance.new("ScrollingFrame")
-    scrollFrame.Size = UDim2.new(1, 0, 1, 0)
-    scrollFrame.BackgroundTransparency = 1
-    scrollFrame.ScrollBarThickness = 5
-    scrollFrame.ScrollBarImageColor3 = accentColor
-    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    scrollFrame.Parent = contentFrame
-    
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, ELEMENT_SPACING)
-    layout.Parent = scrollFrame
-    
-    local padding = Instance.new("UIPadding")
-    padding.PaddingLeft = UDim.new(0, PADDING)
-    padding.PaddingRight = UDim.new(0, PADDING)
-    padding.PaddingTop = UDim.new(0, ELEMENT_SPACING)
-    padding.PaddingBottom = UDim.new(0, ELEMENT_SPACING)
-    padding.Parent = scrollFrame
-    
-    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + ELEMENT_SPACING * 2)
-    end)
-    
-    -- Store references
+
+    local gui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+    gui.ResetOnSpawn = false
+
+    local main = Instance.new("Frame", gui)
+    main.Size = UDim2.new(0, 160, 0, 110)
+    main.Position = UDim2.new(0.5, -80, 0.5, -55)
+    main.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    main.BackgroundTransparency = 0.2
+    main.BorderSizePixel = 0
+    main.Active = true
+    main.Draggable = true
+    main.ClipsDescendants = true
+
+    local corner = Instance.new("UICorner", main)
+    corner.CornerRadius = UDim.new(0, 10)
+
+    local minimize = Instance.new("TextButton", main)
+    minimize.Size = UDim2.new(0, 20, 0, 20)
+    minimize.Position = UDim2.new(0, 0, 0, 0)
+    minimize.Text = "▼"
+    minimize.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    minimize.TextColor3 = Color3.fromRGB(255, 150, 255)
+    Instance.new("UICorner", minimize).CornerRadius = UDim.new(0, 10)
+
+    local scroll = Instance.new("ScrollingFrame", main)
+    scroll.Size = UDim2.new(1, 0, 1, -22)
+    scroll.Position = UDim2.new(0, 0, 0, 22)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scroll.ScrollBarThickness = 6
+    scroll.BackgroundTransparency = 1
+    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+    local list = Instance.new("UIListLayout", scroll)
+    list.Padding = UDim.new(0, 6)
+    list.SortOrder = Enum.SortOrder.LayoutOrder
+
     self.gui = gui
-    self.frame = frame
-    self.scrollFrame = scrollFrame
-    self.layout = layout
-    self.elements = {}
-    self.open = true
-    self.accentColor = accentColor
+    self.frame = main
+    self.scroll = scroll
+    self.minimized = false
+
+    local tweenService = game:GetService("TweenService")
     
-    -- Close button functionality
-    closeBtn.MouseButton1Click:Connect(function()
-        self:destroy()
+    minimize.MouseButton1Click:Connect(function()
+        self.minimized = not self.minimized
+        local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local targetSize = self.minimized and UDim2.new(0, 160, 0, 22) or UDim2.new(0, 160, 0, 110)
+        local tween = tweenService:Create(main, tweenInfo, {Size = targetSize})
+        tween:Play()
+        minimize.Text = self.minimized and "▲" or "▼"
     end)
-    
-    -- Minimize button functionality
-    minimizeBtn.MouseButton1Click:Connect(function()
-        self:toggle()
-    end)
-    
+
     return self
 end
 
-function UILib:toggle()
-    self.open = not self.open
-    self.frame.Visible = self.open
-    return self.open
+function UILib:addBtn(name, callback)
+    local btn = Instance.new("TextButton", self.scroll)
+    btn.Size = UDim2.new(1, -12, 0, 25)
+    btn.Text = name
+    btn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+    btn.TextColor3 = Color3.fromRGB(255, 150, 255)
+    btn.Font = Enum.Font.SourceSans
+    btn.TextSize = 14
+    
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0, 10)
+    
+    btn.MouseButton1Click:Connect(function()
+        callback()
+    end)
+    
+    return btn
 end
 
-function UILib:destroy()
-    if self.gui then
-        self.gui:Destroy()
-    end
-    self = nil
-end
+function UILib:addToggle(name, callback)
+    local toggled = false
+    local btn = Instance.new("TextButton", self.scroll)
+    btn.Size = UDim2.new(1, -12, 0, 25)
+    btn.Text = "Enable " .. name
+    btn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+    btn.TextColor3 = Color3.fromRGB(255, 150, 255)
+    btn.Font = Enum.Font.SourceSans
+    btn.TextSize = 14
+    
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0, 10)
 
-function UILib:resize()
-    local totalHeight = ELEMENT_HEIGHT -- Title bar height
-    for _, element in pairs(self.elements) do
-        totalHeight = totalHeight + element.AbsoluteSize.Y + ELEMENT_SPACING
-    end
-    
-    self.frame.Size = UDim2.new(
-        self.frame.Size.Width,
-        UDim.new(0, math.max(self.frame.AbsoluteSize.X, 200)),
-        0,
-        math.min(totalHeight + ELEMENT_SPACING * 2, 500) -- Max height of 500
-    )
-end
-
-function UILib:addBtn(name, callback, tooltip)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -PADDING*2, 0, ELEMENT_HEIGHT)
-    button.Text = name
-    button.BackgroundColor3 = COLORS.BUTTON
-    button.TextColor3 = self.accentColor
-    button.Font = FONTS.BODY
-    button.TextSize = SIZES.BODY
-    button.AutoButtonColor = false
-    button.Parent = self.scrollFrame
-    
-    if tooltip then
-        button.MouseEnter:Connect(function()
-            -- You could implement a tooltip system here
-        end)
-    end
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, CORNER_RADIUS - 2)
-    corner.Parent = button
-    
-    -- Hover effects
-    button.MouseEnter:Connect(function()
-        button.BackgroundColor3 = COLORS.BUTTON_HOVER
-    end)
-    
-    button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = COLORS.BUTTON
-    end)
-    
-    button.MouseButton1Down:Connect(function()
-        button.BackgroundColor3 = COLORS.BUTTON_PRESSED
-    end)
-    
-    button.MouseButton1Up:Connect(function()
-        button.BackgroundColor3 = COLORS.BUTTON_HOVER
-    end)
-    
-    -- Click functionality
-    button.MouseButton1Click:Connect(function()
-        pcall(callback)
-    end)
-    
-    table.insert(self.elements, button)
-    self:resize()
-    
-    return button
-end
-
-function UILib:addToggle(name, callback, defaultState)
-    local toggled = defaultState or false
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -PADDING*2, 0, ELEMENT_HEIGHT)
-    button.Text = (toggled and "☑ " or "☐ ") .. name
-    button.BackgroundColor3 = COLORS.BUTTON
-    button.TextColor3 = self.accentColor
-    button.Font = FONTS.BODY
-    button.TextSize = SIZES.BODY
-    button.AutoButtonColor = false
-    button.TextXAlignment = Enum.TextXAlignment.Left
-    button.Parent = self.scrollFrame
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, CORNER_RADIUS - 2)
-    corner.Parent = button
-    
-    -- Hover effects
-    button.MouseEnter:Connect(function()
-        button.BackgroundColor3 = COLORS.BUTTON_HOVER
-    end)
-    
-    button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = COLORS.BUTTON
-    end)
-    
-    button.MouseButton1Down:Connect(function()
-        button.BackgroundColor3 = COLORS.BUTTON_PRESSED
-    end)
-    
-    button.MouseButton1Up:Connect(function()
-        button.BackgroundColor3 = COLORS.BUTTON_HOVER
-    end)
-    
-    -- Toggle functionality
-    button.MouseButton1Click:Connect(function()
+    btn.MouseButton1Click:Connect(function()
         toggled = not toggled
-        button.Text = (toggled and "☑ " or "☐ ") .. name
-        pcall(callback, toggled)
+        btn.Text = (toggled and "Disable " or "Enable ") .. name
+        callback(toggled)
     end)
     
-    table.insert(self.elements, button)
-    self:resize()
-    
-    return {
-        button = button,
-        setState = function(self, state)
-            toggled = state
-            button.Text = (toggled and "☑ " or "☐ ") .. name
-        end,
-        getState = function(self)
-            return toggled
-        end
-    }
+    return btn
 end
 
-function UILib:addTextbox(placeholder, callback, clearOnSubmit)
-    local box = Instance.new("TextBox")
-    box.Size = UDim2.new(1, -PADDING*2, 0, ELEMENT_HEIGHT)
+function UILib:addTextbox(placeholder, callback)
+    local box = Instance.new("TextBox", self.scroll)
+    box.Size = UDim2.new(1, -12, 0, 25)
     box.PlaceholderText = placeholder
     box.Text = ""
-    box.BackgroundColor3 = COLORS.TEXTBOX
-    box.TextColor3 = COLORS.TEXT
-    box.Font = FONTS.BODY
-    box.TextSize = SIZES.BODY
-    box.ClearTextOnFocus = clearOnSubmit or false
-    box.Parent = self.scrollFrame
+    box.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    box.Font = Enum.Font.SourceSans
+    box.TextSize = 14
     
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, CORNER_RADIUS - 2)
-    corner.Parent = box
-    
-    -- Focus effects
-    box.Focused:Connect(function()
-        box.BackgroundColor3 = COLORS.TEXTBOX_FOCUSED
-    end)
-    
+    local corner = Instance.new("UICorner", box)
+    corner.CornerRadius = UDim.new(0, 10)
+
     box.FocusLost:Connect(function(enterPressed)
-        box.BackgroundColor3 = COLORS.TEXTBOX
         if enterPressed then
-            pcall(callback, box.Text)
-            if clearOnSubmit then
-                box.Text = ""
-            end
+            callback(box.Text)
         end
     end)
-    
-    table.insert(self.elements, box)
-    self:resize()
     
     return box
 end
 
-function UILib:addLabel(text, centered)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -PADDING*2, 0, 20)
-    label.Text = text
-    label.TextColor3 = COLORS.TEXT
-    label.BackgroundTransparency = 1
-    label.Font = FONTS.BODY
-    label.TextSize = SIZES.SMALL
-    label.TextXAlignment = centered and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left
-    label.Parent = self.scrollFrame
-    
-    table.insert(self.elements, label)
-    self:resize()
-    
-    return label
-end
-
-function UILib:addDivider()
-    local divider = Instance.new("Frame")
-    divider.Size = UDim2.new(1, -PADDING*2, 0, 1)
-    divider.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
-    divider.BackgroundTransparency = 0.7
-    divider.BorderSizePixel = 0
-    divider.Parent = self.scrollFrame
-    
-    table.insert(self.elements, divider)
-    self:resize()
-    
-    return divider
-end
-
-function UILib:addSlider(name, minValue, maxValue, callback, defaultValue)
-    local sliderValue = defaultValue or minValue
-    local sliderWidth = self.frame.AbsoluteSize.X - PADDING * 2
-    
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, -PADDING*2, 0, 50)
-    container.BackgroundTransparency = 1
-    container.Parent = self.scrollFrame
-    
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 20)
-    label.Text = name..": "..tostring(sliderValue)
-    label.TextColor3 = COLORS.TEXT
-    label.BackgroundTransparency = 1
-    label.Font = FONTS.BODY
-    label.TextSize = SIZES.SMALL
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = container
-    
-    local track = Instance.new("Frame")
-    track.Size = UDim2.new(1, 0, 0, 5)
-    track.Position = UDim2.new(0, 0, 0, 25)
-    track.BackgroundColor3 = COLORS.BUTTON
-    track.Parent = container
-    
-    local trackCorner = Instance.new("UICorner")
-    trackCorner.CornerRadius = UDim.new(1, 0)
-    trackCorner.Parent = track
-    
-    local fill = Instance.new("Frame")
-    fill.Size = UDim2.new((sliderValue - minValue)/(maxValue - minValue), 0, 1, 0)
-    fill.BackgroundColor3 = self.accentColor
-    fill.Parent = track
-    
-    local fillCorner = Instance.new("UICorner")
-    fillCorner.CornerRadius = UDim.new(1, 0)
-    fillCorner.Parent = fill
-    
-    local thumb = Instance.new("TextButton")
-    thumb.Size = UDim2.new(0, 15, 0, 15)
-    thumb.Position = UDim2.new((sliderValue - minValue)/(maxValue - minValue), -7, 0.5, -7)
-    thumb.BackgroundColor3 = Color3.new(1, 1, 1)
-    thumb.AutoButtonColor = false
-    thumb.Text = ""
-    thumb.Parent = container
-    
-    local thumbCorner = Instance.new("UICorner")
-    thumbCorner.CornerRadius = UDim.new(1, 0)
-    thumbCorner.Parent = thumb
-    
-    local dragging = false
-    
-    local function updateSlider(input)
-        local xPos = math.clamp((input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
-        sliderValue = math.floor(minValue + (maxValue - minValue) * xPos)
-        label.Text = name..": "..tostring(sliderValue)
-        fill.Size = UDim2.new(xPos, 0, 1, 0)
-        thumb.Position = UDim2.new(xPos, -7, 0.5, -7)
-        pcall(callback, sliderValue)
-    end
-    
-    thumb.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-    
-    thumb.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-            updateSlider(input)
-        end
-    end)
-    
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-            updateSlider(input)
-        end
-    end)
-    
-    track.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            updateSlider(input)
-        end
-    end)
-    
-    table.insert(self.elements, container)
-    self:resize()
-    
-    return {
-        container = container,
-        setValue = function(self, value)
-            sliderValue = math.clamp(value, minValue, maxValue)
-            local xPos = (sliderValue - minValue)/(maxValue - minValue)
-            label.Text = name..": "..tostring(sliderValue)
-            fill.Size = UDim2.new(xPos, 0, 1, 0)
-            thumb.Position = UDim2.new(xPos, -7, 0.5, -7)
-            pcall(callback, sliderValue)
-        end,
-        getValue = function(self)
-            return sliderValue
-        end
-    }
+function UILib:destroy()
+    self.gui:Destroy()
+    setmetatable(self, nil)
 end
 
 return UILib
