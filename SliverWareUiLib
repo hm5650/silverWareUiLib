@@ -3,7 +3,7 @@ local UILib = {}
 function UILib:Create(title)
     local lib = {}
     local minimized = false
-    local originalSize = UDim2.new(0, 200, 0, 120)
+    local originalSize = UDim2.new(0, 200, 0, 200) -- Increased height for better scrolling
     local minimizedSize = UDim2.new(0, 200, 0, 30)
     
     -- Create main screen GUI
@@ -16,14 +16,14 @@ function UILib:Create(title)
     local main = Instance.new("Frame")
     main.Name = "MainWindow"
     main.Size = originalSize
-    main.Position = UDim2.new(0.5, -100, 0.5, -60)
+    main.Position = UDim2.new(0.5, -100, 0.5, -100)
     main.BackgroundColor3 = Color3.fromRGB(20, 25, 30)
     main.BackgroundTransparency = 0.1
-    main.BorderColor3 = Color3.fromRGB(60, 60, 60) -- This creates the outline
+    main.BorderColor3 = Color3.fromRGB(60, 60, 60)
     main.BorderSizePixel = 1
     main.Active = true
     main.Draggable = true
-    main.ClipsDescendants = true -- Important for hiding elements when minimized
+    main.ClipsDescendants = true
     main.Parent = screenGui
     
     -- Corner rounding for main frame
@@ -36,6 +36,7 @@ function UILib:Create(title)
     titleBar.Name = "TitleBar"
     titleBar.Size = UDim2.new(1, 0, 0, 30)
     titleBar.BackgroundTransparency = 1
+    titleBar.ZIndex = 2 -- Ensure title stays above content
     titleBar.Parent = main
     
     local titleLabel = Instance.new("TextLabel")
@@ -63,27 +64,35 @@ function UILib:Create(title)
     minimizeButton.TextSize = 18
     minimizeButton.Parent = titleBar
     
-    -- Content frame (holds all buttons/elements)
-    local contentFrame = Instance.new("Frame")
-    contentFrame.Name = "Content"
-    contentFrame.Size = UDim2.new(1, 0, 1, -30)
-    contentFrame.Position = UDim2.new(0, 0, 0, 30)
-    contentFrame.BackgroundTransparency = 1
-    contentFrame.Parent = main
+    -- Scrolling frame for content
+    local scrollFrame = Instance.new("ScrollingFrame")
+    scrollFrame.Name = "ContentScroll"
+    scrollFrame.Size = UDim2.new(1, 0, 1, -30)
+    scrollFrame.Position = UDim2.new(0, 0, 0, 30)
+    scrollFrame.BackgroundTransparency = 1
+    scrollFrame.ScrollBarThickness = 6
+    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) -- Will auto-update
+    scrollFrame.Parent = main
     
-    -- Layout for elements
+    -- Layout for elements inside scroll frame
     local layout = Instance.new("UIListLayout")
     layout.Padding = UDim.new(0, 6)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Parent = contentFrame
+    layout.Parent = scrollFrame
     
-    -- Padding inside content frame
+    -- Padding inside scroll frame
     local padding = Instance.new("UIPadding")
     padding.PaddingTop = UDim.new(0, 8)
     padding.PaddingBottom = UDim.new(0, 8)
     padding.PaddingLeft = UDim.new(0, 8)
     padding.PaddingRight = UDim.new(0, 8)
-    padding.Parent = contentFrame
+    padding.Parent = scrollFrame
+    
+    -- Auto-update canvas size
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 16)
+    end)
     
     -- Button creation function
     local function createButton(text, callback)
@@ -96,8 +105,8 @@ function UILib:Create(title)
         btn.Font = Enum.Font.Gotham
         btn.TextSize = 14
         btn.AutoButtonColor = true
-        btn.LayoutOrder = #contentFrame:GetChildren() + 1
-        btn.Parent = contentFrame
+        btn.LayoutOrder = #scrollFrame:GetChildren() + 1
+        btn.Parent = scrollFrame
         
         -- Corner rounding
         local corner = Instance.new("UICorner")
@@ -140,8 +149,8 @@ function UILib:Create(title)
         toggleFrame.Name = text.."Toggle"
         toggleFrame.Size = UDim2.new(1, -10, 0, 28)
         toggleFrame.BackgroundTransparency = 1
-        toggleFrame.LayoutOrder = #contentFrame:GetChildren() + 1
-        toggleFrame.Parent = contentFrame
+        toggleFrame.LayoutOrder = #scrollFrame:GetChildren() + 1
+        toggleFrame.Parent = scrollFrame
         
         local btn = Instance.new("TextButton")
         btn.Name = "ToggleButton"
@@ -218,8 +227,8 @@ function UILib:Create(title)
         box.Font = Enum.Font.Gotham
         box.TextSize = 14
         box.ClearTextOnFocus = false
-        box.LayoutOrder = #contentFrame:GetChildren() + 1
-        box.Parent = contentFrame
+        box.LayoutOrder = #scrollFrame:GetChildren() + 1
+        box.Parent = scrollFrame
         
         -- Corner rounding
         local corner = Instance.new("UICorner")
@@ -252,12 +261,12 @@ function UILib:Create(title)
         local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
         
         if minimized then
-            -- Collapse (hides contentFrame automatically due to ClipsDescendants)
+            -- Collapse (hides content completely)
             game:GetService("TweenService"):Create(main, tweenInfo, {
                 Size = minimizedSize
             }):Play()
         else
-            -- Expand (reveals contentFrame)
+            -- Expand (shows content)
             game:GetService("TweenService"):Create(main, tweenInfo, {
                 Size = originalSize
             }):Play()
